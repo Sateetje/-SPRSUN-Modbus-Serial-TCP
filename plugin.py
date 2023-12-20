@@ -34,7 +34,7 @@ Requirements:
 
 """
 
-import pymodbus    #v???
+import pymodbus.client as ModbusClient
 import Domoticz    #tested on Python 3.9.2 in Domoticz 2023.2
 from pymodbus import (
     ExceptionResponse,
@@ -54,13 +54,12 @@ class SettingToWrite:
 class BasePlugin:
     def __init__(self):
         self.runInterval = 1
-        self.rs485 = ""
         self.settingsToWrite = []
         return
 
     def onStart(self):
         devicecreated = []
-        Domoticz.Log("SPRSUN-Modbus plugin start")
+        Domoticz.Log("SPRSUN-Modbus-Serial-TCP plugin start")
         self.runInterval = 1
 
         #https://github.com/domoticz/domoticz/blob/master/hardware/hardwaretypes.h
@@ -180,12 +179,11 @@ class BasePlugin:
         if 51 not in Devices:
             Domoticz.Device(Name="Pump mode",Unit=51,TypeName="Selector Switch",Options=Options,Image=11,Used=1).Create()
     def onStop(self):
-        Domoticz.Log("SPRSUN-Modbus plugin stop")
+        Domoticz.Log("SPRSUN-Modbus-Serial-TCP plugin stop")
 
     def onHeartbeat(self):
         self.runInterval -=1;
         if self.runInterval <= 0:
-
             PV_Return_Water_Temperature = 0 #  Declare these to keep the debug section at the bottom from complaining.
             PV_Outlet_Temperature = 0
             PV_Ambient_Temperature = 0
@@ -248,13 +246,14 @@ class BasePlugin:
             port = Parameters["Port"]
             serialPort = Parameters["SerialPort"]
             baudrate = Parameters["Mode1"]
+            deviceID = Parameters["Mode2"]
 
             try:
                 if comm == "tcp":
                     client = ModbusClient.ModbusTcpClient(
                         host=hostAddress,
                         port=port,
-                        framer=Framer.SOCKET,
+                        framer=Framer.RTU,
                         # timeout=10,
                         # retries=3,
                         # retry_on_empty=False,y
@@ -266,7 +265,7 @@ class BasePlugin:
                     client = ModbusClient.ModbusUdpClient(
                         host=hostAddress,
                         port=port,
-                        framer=Framer.SOCKET,
+                        framer=Framer.RTU,
                         # timeout=10,
                         # retries=3,
                         # retry_on_empty=False,
@@ -277,7 +276,7 @@ class BasePlugin:
                 elif comm == "serial":
                     client = ModbusClient.ModbusSerialClient(
                         port=serialPort,
-                        framer=Framer.SOCKET,
+                        framer=Framer.RTU,
                         # timeout=10,
                         # retries=3,
                         # retry_on_empty=False,
@@ -293,16 +292,18 @@ class BasePlugin:
                     print(f"Unknown client {comm} selected")
                     return
 
+                client.connect()
+                
                 # Write settings first
                 for setting in self.settingsToWrite:
                     Domoticz.Log('Writing to register {0} with value {1}'.format(setting.register,setting.value))
                     if setting.isBit == True:
-                        self.rs485.write_bit(setting.register,setting.value,5) # Value 0 or 1
+                        client.write_coil(setting.register,setting.value,deviceID) # Value 0 or 1
                     else:
-                        self.rs485.write_register(setting.register,setting.value,setting.decimalPlaces,6,setting.signed)
+                        client.write_register(setting.register,setting.value*(10**setting.decimalPlaces),deviceID) signed?
                 self.settingsToWrite.clear()
 
-                PV_Return_Water_Temperature = self.rs485.read_register(188,1,3,False)
+                PV_Return_Water_Temperature = client.read_holding_registers(188,1,deviceID).registers[0]/10
                 PV_Outlet_Temperature = self.rs485.read_register(189,1,3,False)
                 PV_Ambient_Temperature = self.rs485.read_register(190,1,3,False)
                 PV_Hot_Water_Temperature = self.rs485.read_register(195,1,3,False)

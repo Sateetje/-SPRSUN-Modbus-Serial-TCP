@@ -18,10 +18,11 @@ Requirements:
         <param field="Port" label="TCP Port" width="200px" required="false" default="4196" />
         <param field="Mode1" label="Baud rate" width="40px" required="false" default="19200" />
         <param field="Mode2" label="Device ID" width="40px" required="true" default="1" />
-        <param field="Mode3" label="Method" width="75px">
+        <param field="Mode3" label="Method" width="120px">
             <options>
-                <option label="Serial" value="serial"/>
-                <option label="TCP" value="tcp"  default="true" />
+                <option label="RTU-Serial" value="serial"/>
+                <option label="RTU-TCP" value="tcp"  default="true" />
+                <option label="RTU-UDP" value="udp" />
             </options>
         </param>
         <param field="Mode6" label="Debug" width="75px">

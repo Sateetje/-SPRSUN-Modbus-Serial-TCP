@@ -47,7 +47,6 @@ class SettingToWrite:
         self.register = register
         self.value = value
         self.decimalPlaces = decimalPlaces
-        self.signed = signed
         self.isBit = isBit
 
 class BasePlugin:
@@ -563,47 +562,47 @@ class BasePlugin:
             #Unit On
             if Command == "On":
                 nValue=1
-                self.settingsToWrite.append(SettingToWrite(40,1,0,False,True))
+                self.settingsToWrite.append(SettingToWrite(40,1,0,True))
             else:
                 nValue=0
-                self.settingsToWrite.append(SettingToWrite(40,0,0,False,True))
+                self.settingsToWrite.append(SettingToWrite(40,0,0,True))
             sValue=Command
         elif Unit == 13:
             #Hot water setpoint
             nValue=int(Level)
-            self.settingsToWrite.append(SettingToWrite(3,float(Level),1,False,False))
+            self.settingsToWrite.append(SettingToWrite(3,float(Level),1,False))
         elif Unit == 14:
             #Heating setpoint
             nValue=int(Level)
-            self.settingsToWrite.append(SettingToWrite(1,float(Level),1,False,False))
+            self.settingsToWrite.append(SettingToWrite(1,float(Level),1,False))
         elif Unit == 15:
             #Mode, when switching mode, need to turn the unit off and on again
             if Devices[5].nValue == 1:
-                self.settingsToWrite.append(SettingToWrite(40,0,0,False,True))
+                self.settingsToWrite.append(SettingToWrite(40,0,0,True))
 
-            self.settingsToWrite.append(SettingToWrite(0,int((Level/10)-1),0,False,False))
+            self.settingsToWrite.append(SettingToWrite(0,int((Level/10)-1),0,False))
 
             #if Unit was on, turn back on
             if Devices[5].nValue == 1:
-                self.settingsToWrite.append(SettingToWrite(40,1,0,False,True))
+                self.settingsToWrite.append(SettingToWrite(40,1,0,True))
         elif Unit == 20:
             #Fan mode
-            self.settingsToWrite.append(SettingToWrite(12,int((Level/10)-1),0,False,False))
+            self.settingsToWrite.append(SettingToWrite(12,int((Level/10)-1),0,False))
         elif Unit == 21:
             #Temp diff hot water
             nValue=int(Level)
-            self.settingsToWrite.append(SettingToWrite(4,float(Level),1,False,False))
+            self.settingsToWrite.append(SettingToWrite(4,float(Level),1,False))
         elif Unit == 22:
             #Temp diff cooling/heating
             nValue=int(Level)
-            self.settingsToWrite.append(SettingToWrite(6,float(Level),1,False,False))
+            self.settingsToWrite.append(SettingToWrite(6,float(Level),1,False))
         elif Unit == 50:
             #Cooling setpoint
             nValue=int(Level)
-            self.settingsToWrite.append(SettingToWrite(2,float(Level),1,False,False))
+            self.settingsToWrite.append(SettingToWrite(2,float(Level),1,False))
         elif Unit == 51:
             #Pump mode
-            self.settingsToWrite.append(SettingToWrite(11,int((Level/10)-1),0,False,False))
+            self.settingsToWrite.append(SettingToWrite(11,int((Level/10)-1),0,False))
 
         Devices[Unit].Update(nValue=nValue, sValue=sValue)
         Devices[Unit].Refresh()

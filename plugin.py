@@ -43,6 +43,7 @@ from pymodbus.payload import BinaryPayloadDecoder,BinaryPayloadBuilder
 from pymodbus.constants import Endian
 
 class SettingToWrite:
+    def __init__(self, register, value, decimalPlaces, isBit):
         self.register = register
         self.value = value
         self.decimalPlaces = decimalPlaces

@@ -43,7 +43,6 @@ from pymodbus.payload import BinaryPayloadDecoder,BinaryPayloadBuilder
 from pymodbus.constants import Endian
 
 class SettingToWrite:
-        self.isBit = isBit
         self.register = register
         self.value = value
         self.decimalPlaces = decimalPlaces
@@ -238,7 +237,7 @@ class BasePlugin:
             # Get data from SPRSUN
             if Parameters["Mode6"] == 'Debug':
                 pymodbus_apply_logging_config("DEBUG")
-            
+
             comm = Parameters["Mode3"]
             hostAddress = Parameters["Address"]
             port = Parameters["Port"]
@@ -291,7 +290,7 @@ class BasePlugin:
                     return
 
                 client.connect()
-                
+
                 # Write settings first
                 for setting in self.settingsToWrite:
                     Domoticz.Log('Writing to register {0} with value {1}'.format(setting.register,setting.value))
@@ -299,7 +298,7 @@ class BasePlugin:
                         self.writeToModbus(client,deviceID,setting.register,setting.value,0,True)
                     else:
                         self.writeToModbus(client,deviceID,setting.register,setting.value,setting.decimalPlaces,False)
-                        
+
                 self.settingsToWrite.clear()
 
                 PV_Return_Water_Temperature = self.readFromModbus(client, deviceID, 188, 1)
@@ -352,7 +351,7 @@ class BasePlugin:
                 Pump_Mode = self.readFromModbus(client, deviceID, 11, 0)
 
                 client.close()
-                
+
                 #Convert State to Text
                 if Status == 0:
                     StatusText = "Unit not Ready"
@@ -635,7 +634,7 @@ class BasePlugin:
     def writeToModbus(client, deviceID, register, value, decimalPlaces = 0, isBit = False):
         try:
             if isBit:
-                #write_coil(address: int, value: bool, slave: int = 0, **kwargs: Any) 
+                #write_coil(address: int, value: bool, slave: int = 0, **kwargs: Any)
                 rr = client.write_coil(register, value, slave=deviceID)
             else:
                 builder = BinaryPayloadBuilder(wordorder=Endian.BIG, byteorder=Endian.BIG)
@@ -653,7 +652,7 @@ class BasePlugin:
             Domoticz.Log(f"Received Modbus library exception ({rr})")
             # THIS IS NOT A PYTHON EXCEPTION, but a valid modbus message
             client.close()
-        
+
 global _plugin
 _plugin = BasePlugin()
 

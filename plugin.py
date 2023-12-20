@@ -16,7 +16,7 @@ Requirements:
         <param field="SerialPort" label="Modbus Port" width="200px" required="false" default="/dev/ttyUSB0" />
         <param field="Address" label="IP Address" width="200px" required="false" default="127.0.0.1" />
         <param field="Port" label="TCP Port" width="200px" required="false" default="4196" />
-        <param field="Mode1" label="Baud rate" width="40px" required="false" default="19200"  />
+        <param field="Mode1" label="Baud rate" width="40px" required="false" default="19200" />
         <param field="Mode2" label="Device ID" width="40px" required="true" default="1" />
         <param field="Mode3" label="Method" width="74px">
             <options>

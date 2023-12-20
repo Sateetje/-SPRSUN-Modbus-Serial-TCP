@@ -634,7 +634,6 @@ class BasePlugin:
         return 0
 
     def writeToModbus(client, deviceID, register, value, decimalPlaces = 0, isBit = False):
-         client.write_register(setting.register,setting.value*(10**setting.decimalPlaces),deviceID) signed?
         try:
             if isBit:
                 #write_coil(address: int, value: bool, slave: int = 0, **kwargs: Any) 

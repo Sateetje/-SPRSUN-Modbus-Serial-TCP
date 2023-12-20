@@ -34,8 +34,8 @@ Requirements:
 
 """
 
-import pymodbus.client as ModbusClient
 import Domoticz    #tested on Python 3.9.2 in Domoticz 2023.2
+import pymodbus.client as ModbusClient
 from pymodbus import ExceptionResponse,Framer,ModbusException,pymodbus_apply_logging_config
 from pymodbus.payload import BinaryPayloadDecoder,BinaryPayloadBuilder
 from pymodbus.constants import Endian
@@ -295,60 +295,63 @@ class BasePlugin:
                 for setting in self.settingsToWrite:
                     Domoticz.Log('Writing to register {0} with value {1}'.format(setting.register,setting.value))
                     if setting.isBit == True:
-                        client.write_coil(setting.register,setting.value,deviceID) # Value 0 or 1
+                        self.writeToModbus(client,deviceID,setting.register,setting.value,0,True)
                     else:
-                        client.write_register(setting.register,setting.value*(10**setting.decimalPlaces),deviceID) signed?
+                        self.writeToModbus(client,deviceID,setting.register,setting.value,setting.decimalPlaces,False)
+                        
                 self.settingsToWrite.clear()
 
                 PV_Return_Water_Temperature = self.readFromModbus(client, deviceID, 188, 1)
-                PV_Outlet_Temperature = self.rs485.read_register(189,1,3,False)
-                PV_Ambient_Temperature = self.rs485.read_register(190,1,3,False)
-                PV_Hot_Water_Temperature = self.rs485.read_register(195,1,3,False)
-                Unit_On = self.rs485.read_bit(40, 1)
-                PV_Fan_Output = self.rs485.read_register(197,1,3,False)
-                PV_Pump_Output = self.rs485.read_register(198,1,3,False)
-                PV_Required_Cap = self.rs485.read_register(203,1,3,False)
-                PV_Actual_Cap = self.rs485.read_register(204,1,3,False)
-                PV_Power = self.rs485.read_register(333,1,3,False) * 1000 #kW to W
-                PV_Voltage = self.rs485.read_register(334,0,3,False)
-                PV_Current = self.rs485.read_register(335,1,3,False)
-                SP_Hot_Water = self.rs485.read_register(3,1,3,False)
-                SP_Heating = self.rs485.read_register(1,1,3,False)
-                Mode = self.rs485.read_register(0,0,3,False)
-                Status = self.rs485.read_register(217,0,3,False)
-                ThreeWayValve = self.rs485.read_bit(11, 2)
-                Heater = self.rs485.read_bit(12, 2)
-                AC_Linkage = self.rs485.read_bit(3, 2)
-                Fan_Mode = self.rs485.read_register(12,0,3,False)
-                SP_TempDiff_Hot_Water = self.rs485.read_register(4,1,3,False)
-                SP_TempDiff_Cooling_Heating = self.rs485.read_register(6,1,3,False)
-                Eco_Mode_Cooling_X1 = self.rs485.read_register(276,1,3,True)
-                Eco_Mode_Cooling_X2 = self.rs485.read_register(277,1,3,True)
-                Eco_Mode_Cooling_X3 = self.rs485.read_register(278,1,3,True)
-                Eco_Mode_Cooling_X4 = self.rs485.read_register(279,1,3,True)
-                Eco_Mode_Cooling_Y1 = self.rs485.read_register(336,1,3,True)
-                Eco_Mode_Cooling_Y2 = self.rs485.read_register(288,1,3,True)
-                Eco_Mode_Cooling_Y3 = self.rs485.read_register(289,1,3,True)
-                Eco_Mode_Cooling_Y4 = self.rs485.read_register(290,1,3,True)
-                Eco_Mode_Heating_X1 = self.rs485.read_register(280,1,3,True)
-                Eco_Mode_Heating_X2 = self.rs485.read_register(281,1,3,True)
-                Eco_Mode_Heating_X3 = self.rs485.read_register(282,1,3,True)
-                Eco_Mode_Heating_X4 = self.rs485.read_register(283,1,3,True)
-                Eco_Mode_Heating_Y1 = self.rs485.read_register(291,1,3,True)
-                Eco_Mode_Heating_Y2 = self.rs485.read_register(292,1,3,True)
-                Eco_Mode_Heating_Y3 = self.rs485.read_register(293,1,3,True)
-                Eco_Mode_Heating_Y4 = self.rs485.read_register(337,1,3,True)
-                Eco_Mode_Hot_Water_X1 = self.rs485.read_register(284,1,3,True)
-                Eco_Mode_Hot_Water_X2 = self.rs485.read_register(285,1,3,True)
-                Eco_Mode_Hot_Water_X3 = self.rs485.read_register(286,1,3,True)
-                Eco_Mode_Hot_Water_X4 = self.rs485.read_register(287,1,3,True)
-                Eco_Mode_Hot_Water_Y1 = self.rs485.read_register(294,1,3,True)
-                Eco_Mode_Hot_Water_Y2 = self.rs485.read_register(295,1,3,True)
-                Eco_Mode_Hot_Water_Y3 = self.rs485.read_register(296,1,3,True)
-                Eco_Mode_Hot_Water_Y4 = self.rs485.read_register(338,1,3,True)
-                SP_Cooling = self.rs485.read_register(2,1,3,False)
-                Pump_Mode = self.rs485.read_register(11,0,3,False)
+                PV_Outlet_Temperature = self.readFromModbus(client, deviceID, 189, 1)
+                PV_Ambient_Temperature = self.readFromModbus(client, deviceID, 190, 1)
+                PV_Hot_Water_Temperature = self.readFromModbus(client, deviceID, 195, 1)
+                Unit_On = self.readFromModbus(client, deviceID, 40, 0, True)
+                PV_Fan_Output = self.readFromModbus(client, deviceID, 197, 1)
+                PV_Pump_Output = self.readFromModbus(client, deviceID, 198, 1)
+                PV_Required_Cap = self.readFromModbus(client, deviceID, 203, 1)
+                PV_Actual_Cap = self.readFromModbus(client, deviceID, 204, 1)
+                PV_Power = self.readFromModbus(client, deviceID, 333, 1) * 1000 #kW to W
+                PV_Voltage = self.readFromModbus(client, deviceID, 334, 0)
+                PV_Current = self.readFromModbus(client, deviceID, 335, 1)
+                SP_Hot_Water = self.readFromModbus(client, deviceID, 3, 1)
+                SP_Heating = self.readFromModbus(client, deviceID, 1, 1)
+                Mode = self.readFromModbus(client, deviceID, 0, 0)
+                Status = self.readFromModbus(client, deviceID, 217, 0)
+                ThreeWayValve = self.readFromModbus(client, deviceID, 11, 0, True)
+                Heater = self.readFromModbus(client, deviceID, 12, 0, True)
+                AC_Linkage = self.readFromModbus(client, deviceID, 3, 0, True)
+                Fan_Mode = self.readFromModbus(client, deviceID, 12, 0)
+                SP_TempDiff_Hot_Water = self.readFromModbus(client, deviceID, 4, 1)
+                SP_TempDiff_Cooling_Heating = self.readFromModbus(client, deviceID, 6, 1)
+                Eco_Mode_Cooling_X1 = self.readFromModbus(client, deviceID, 276, 1)
+                Eco_Mode_Cooling_X2 = self.readFromModbus(client, deviceID, 277, 1)
+                Eco_Mode_Cooling_X3 = self.readFromModbus(client, deviceID, 278, 1)
+                Eco_Mode_Cooling_X4 = self.readFromModbus(client, deviceID, 279, 1)
+                Eco_Mode_Cooling_Y1 = self.readFromModbus(client, deviceID, 336, 1)
+                Eco_Mode_Cooling_Y2 = self.readFromModbus(client, deviceID, 288, 1)
+                Eco_Mode_Cooling_Y3 = self.readFromModbus(client, deviceID, 289, 1)
+                Eco_Mode_Cooling_Y4 = self.readFromModbus(client, deviceID, 290, 1)
+                Eco_Mode_Heating_X1 = self.readFromModbus(client, deviceID, 280, 1)
+                Eco_Mode_Heating_X2 = self.readFromModbus(client, deviceID, 281, 1)
+                Eco_Mode_Heating_X3 = self.readFromModbus(client, deviceID, 282, 1)
+                Eco_Mode_Heating_X4 = self.readFromModbus(client, deviceID, 283, 1)
+                Eco_Mode_Heating_Y1 = self.readFromModbus(client, deviceID, 291, 1)
+                Eco_Mode_Heating_Y2 = self.readFromModbus(client, deviceID, 292, 1)
+                Eco_Mode_Heating_Y3 = self.readFromModbus(client, deviceID, 293, 1)
+                Eco_Mode_Heating_Y4 = self.readFromModbus(client, deviceID, 337, 1)
+                Eco_Mode_Hot_Water_X1 = self.readFromModbus(client, deviceID, 284, 1)
+                Eco_Mode_Hot_Water_X2 = self.readFromModbus(client, deviceID, 285, 1)
+                Eco_Mode_Hot_Water_X3 = self.readFromModbus(client, deviceID, 286, 1)
+                Eco_Mode_Hot_Water_X4 = self.readFromModbus(client, deviceID, 287, 1)
+                Eco_Mode_Hot_Water_Y1 = self.readFromModbus(client, deviceID, 294, 1)
+                Eco_Mode_Hot_Water_Y2 = self.readFromModbus(client, deviceID, 295, 1)
+                Eco_Mode_Hot_Water_Y3 = self.readFromModbus(client, deviceID, 296, 1)
+                Eco_Mode_Hot_Water_Y4 = self.readFromModbus(client, deviceID, 338, 1)
+                SP_Cooling = self.readFromModbus(client, deviceID, 2, 1)
+                Pump_Mode = self.readFromModbus(client, deviceID, 11, 0)
 
+                client.close()
+                
                 #Convert State to Text
                 if Status == 0:
                     StatusText = "Unit not Ready"
@@ -433,7 +436,6 @@ class BasePlugin:
                     SP_Hot_Water_Eco_Mode = Eco_Mode_Hot_Water_Y4
                 SP_Hot_Water_Eco_Mode = round(SP_Hot_Water_Eco_Mode, 1)
 
-                self.rs485.serial.close()  #  Close that door !
             except Exception as err:
                 Domoticz.Log(f"Unexpected {err=}, {type(err)=}")
                 Domoticz.Heartbeat(1)   # set Heartbeat to 1 second to get us back here for quick retry.
@@ -607,7 +609,9 @@ class BasePlugin:
     def readFromModbus(client, deviceID, register, decimalPlaces = 0, isBit = False):
         try:
             if isBit:
-                #do bit stuff
+                #read_coils(address: int, count: int = 1, slave: int = 0, **kwargs: Any)
+                rr = client.read_coils(register,1,slave=deviceID)
+                return rr
             else:
                 rr = client.read_holding_registers(register,1,slave=deviceID)
                 decoder = BinaryPayloadDecoder.fromRegisters(rr.registers, byteorder=Endian.BIG, wordorder=Endian.BIG)
@@ -615,18 +619,41 @@ class BasePlugin:
                 value = value/(10**decimalPlaces)
                 return value
         except ModbusException as exc:
-            print(f"Received ModbusException({exc}) from library")
+            Domoticz.Log(f"Received ModbusException({exc}) from library")
             client.close()
             return
         if rr.isError():  # pragma no cover
-            print(f"Received Modbus library error({rr})")
+            Domoticz.Log(f"Received Modbus library error({rr})")
             client.close()
         if isinstance(rr, ExceptionResponse):  # pragma no cover
-            print(f"Received Modbus library exception ({rr})")
+            Domoticz.Log(f"Received Modbus library exception ({rr})")
             # THIS IS NOT A PYTHON EXCEPTION, but a valid modbus message
             client.close()
         return 0
 
+    def writeToModbus(client, deviceID, register, value, decimalPlaces = 0, isBit = False):
+         client.write_register(setting.register,setting.value*(10**setting.decimalPlaces),deviceID) signed?
+        try:
+            if isBit:
+                #write_coil(address: int, value: bool, slave: int = 0, **kwargs: Any) 
+                rr = client.write_coil(register, value, slave=deviceID)
+            else:
+                builder = BinaryPayloadBuilder(wordorder=Endian.BIG, byteorder=Endian.BIG)
+                builder.add_16bit_int(int(value*(10**decimalPlaces)))
+                registers = builder.to_registers()
+                rr = client.write_registers(register, registers, slave=deviceID)
+        except ModbusException as exc:
+            Domoticz.Log(f"Received ModbusException({exc}) from library")
+            client.close()
+            return
+        if rr.isError():  # pragma no cover
+            Domoticz.Log(f"Received Modbus library error({rr})")
+            client.close()
+        if isinstance(rr, ExceptionResponse):  # pragma no cover
+            Domoticz.Log(f"Received Modbus library exception ({rr})")
+            # THIS IS NOT A PYTHON EXCEPTION, but a valid modbus message
+            client.close()
+        
 global _plugin
 _plugin = BasePlugin()
 

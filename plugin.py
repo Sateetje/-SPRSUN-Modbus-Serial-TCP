@@ -36,12 +36,9 @@ Requirements:
 
 import pymodbus.client as ModbusClient
 import Domoticz    #tested on Python 3.9.2 in Domoticz 2023.2
-from pymodbus import (
-    ExceptionResponse,
-    Framer,
-    ModbusException,
-    pymodbus_apply_logging_config,
-)
+from pymodbus import ExceptionResponse,Framer,ModbusException,pymodbus_apply_logging_config
+from pymodbus.payload import BinaryPayloadDecoder,BinaryPayloadBuilder
+from pymodbus.constants import Endian
 
 class SettingToWrite:
         self.isBit = isBit
@@ -303,7 +300,7 @@ class BasePlugin:
                         client.write_register(setting.register,setting.value*(10**setting.decimalPlaces),deviceID) signed?
                 self.settingsToWrite.clear()
 
-                PV_Return_Water_Temperature = client.read_holding_registers(188,1,deviceID).registers[0]/10
+                PV_Return_Water_Temperature = self.readFromModbus(client, deviceID, 188, 1)
                 PV_Outlet_Temperature = self.rs485.read_register(189,1,3,False)
                 PV_Ambient_Temperature = self.rs485.read_register(190,1,3,False)
                 PV_Hot_Water_Temperature = self.rs485.read_register(195,1,3,False)
@@ -606,6 +603,29 @@ class BasePlugin:
 
         Devices[Unit].Update(nValue=nValue, sValue=sValue)
         Devices[Unit].Refresh()
+
+    def readFromModbus(client, deviceID, register, decimalPlaces = 0, isBit = False):
+        try:
+            if isBit:
+                #do bit stuff
+            else:
+                rr = client.read_holding_registers(register,1,slave=deviceID)
+                decoder = BinaryPayloadDecoder.fromRegisters(rr.registers, byteorder=Endian.BIG, wordorder=Endian.BIG)
+                value = d.decode_16bit_int()
+                value = value/(10**decimalPlaces)
+                return value
+        except ModbusException as exc:
+            print(f"Received ModbusException({exc}) from library")
+            client.close()
+            return
+        if rr.isError():  # pragma no cover
+            print(f"Received Modbus library error({rr})")
+            client.close()
+        if isinstance(rr, ExceptionResponse):  # pragma no cover
+            print(f"Received Modbus library exception ({rr})")
+            # THIS IS NOT A PYTHON EXCEPTION, but a valid modbus message
+            client.close()
+        return 0
 
 global _plugin
 _plugin = BasePlugin()

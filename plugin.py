@@ -12,7 +12,7 @@ Requirements:
         tested with ZLAN 5143D using RTU-over-TCP
 """
 """
-<plugin key="SPRSUN" name="SPRSUN-Modbus-Serial-TCP" version="2" author="Sateetje">
+<plugin key="SPRSUN" name="SPRSUN-Modbus" version="2" author="Sateetje">
     <params>
         <param field="SerialPort" label="Modbus Port" width="200px" required="false" default="/dev/ttyUSB0" />
         <param field="Address" label="IP Address" width="200px" required="false" default="127.0.0.1" />
@@ -58,7 +58,7 @@ class BasePlugin:
 
     def onStart(self):
         devicecreated = []
-        Domoticz.Log("SPRSUN-Modbus-Serial-TCP plugin start")
+        Domoticz.Log("SPRSUN-Modbus plugin start")
         self.runInterval = 1
 
         #https://github.com/domoticz/domoticz/blob/master/hardware/hardwaretypes.h
@@ -178,7 +178,7 @@ class BasePlugin:
         if 51 not in Devices:
             Domoticz.Device(Name="Pump mode",Unit=51,TypeName="Selector Switch",Options=Options,Image=11,Used=1).Create()
     def onStop(self):
-        Domoticz.Log("SPRSUN-Modbus-Serial-TCP plugin stop")
+        Domoticz.Log("SPRSUN-Modbus plugin stop")
 
     def onHeartbeat(self):
         self.runInterval -=1;

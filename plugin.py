@@ -6,12 +6,13 @@ Original Author: Sateetje
 Works with SPRSUN HeatPump CGK0x0V2.
 
 Requirements:
-    1.python module pymodbus -> http://...
-        (pi@raspberrypi:~$ sudo pip3 install ...)
+    1.python module pymodbus -> https://pymodbus.readthedocs.io
+        (pi@raspberrypi:~$ sudo pip3 install pymodbus)
     2.Communication module Modbus USB to RS485 or Modbus TCP to RS485
+        tested with ZLAN 5143D using RTU-over-TCP
 """
 """
-<plugin key="SPRSUN" name="SPRSUN-Modbus-Serial-TCP" version="1" author="Sateetje">
+<plugin key="SPRSUN" name="SPRSUN-Modbus-Serial-TCP" version="2" author="Sateetje">
     <params>
         <param field="SerialPort" label="Modbus Port" width="200px" required="false" default="/dev/ttyUSB0" />
         <param field="Address" label="IP Address" width="200px" required="false" default="127.0.0.1" />
@@ -36,8 +37,8 @@ Requirements:
 
 """
 
-import Domoticz    #tested on Python 3.9.2 in Domoticz 2023.2
-import pymodbus.client as ModbusClient
+import Domoticz                          #tested on Python 3.9.2 in Domoticz 2023.2
+import pymodbus.client as ModbusClient   #tested with 3.6.2
 from pymodbus import ExceptionResponse,Framer,ModbusException,pymodbus_apply_logging_config
 from pymodbus.payload import BinaryPayloadDecoder,BinaryPayloadBuilder
 from pymodbus.constants import Endian
@@ -296,60 +297,60 @@ class BasePlugin:
                 for setting in self.settingsToWrite:
                     Domoticz.Log('Writing to register {0} with value {1}'.format(setting.register,setting.value))
                     if setting.isBit == True:
-                        self.writeToModbus(client,deviceID,setting.register,setting.value,0,True)
+                        self.writeToModbus(client,deviceID,5,setting.register,setting.value,0)
                     else:
-                        self.writeToModbus(client,deviceID,setting.register,setting.value,setting.decimalPlaces,False)
+                        self.writeToModbus(client,deviceID,6,setting.register,setting.value,setting.decimalPlaces)
 
                 self.settingsToWrite.clear()
 
-                PV_Return_Water_Temperature = self.readFromModbus(client, deviceID, 188, 1)
-                PV_Outlet_Temperature = self.readFromModbus(client, deviceID, 189, 1)
-                PV_Ambient_Temperature = self.readFromModbus(client, deviceID, 190, 1)
-                PV_Hot_Water_Temperature = self.readFromModbus(client, deviceID, 195, 1)
-                Unit_On = self.readFromModbus(client, deviceID, 40, 0, True)
-                PV_Fan_Output = self.readFromModbus(client, deviceID, 197, 1)
-                PV_Pump_Output = self.readFromModbus(client, deviceID, 198, 1)
-                PV_Required_Cap = self.readFromModbus(client, deviceID, 203, 1)
-                PV_Actual_Cap = self.readFromModbus(client, deviceID, 204, 1)
-                PV_Power = self.readFromModbus(client, deviceID, 333, 1) * 1000 #kW to W
-                PV_Voltage = self.readFromModbus(client, deviceID, 334, 0)
-                PV_Current = self.readFromModbus(client, deviceID, 335, 1)
-                SP_Hot_Water = self.readFromModbus(client, deviceID, 3, 1)
-                SP_Heating = self.readFromModbus(client, deviceID, 1, 1)
-                Mode = self.readFromModbus(client, deviceID, 0, 0)
-                Status = self.readFromModbus(client, deviceID, 217, 0)
-                ThreeWayValve = self.readFromModbus(client, deviceID, 11, 0, True)
-                Heater = self.readFromModbus(client, deviceID, 12, 0, True)
-                AC_Linkage = self.readFromModbus(client, deviceID, 3, 0, True)
-                Fan_Mode = self.readFromModbus(client, deviceID, 12, 0)
-                SP_TempDiff_Hot_Water = self.readFromModbus(client, deviceID, 4, 1)
-                SP_TempDiff_Cooling_Heating = self.readFromModbus(client, deviceID, 6, 1)
-                Eco_Mode_Cooling_X1 = self.readFromModbus(client, deviceID, 276, 1)
-                Eco_Mode_Cooling_X2 = self.readFromModbus(client, deviceID, 277, 1)
-                Eco_Mode_Cooling_X3 = self.readFromModbus(client, deviceID, 278, 1)
-                Eco_Mode_Cooling_X4 = self.readFromModbus(client, deviceID, 279, 1)
-                Eco_Mode_Cooling_Y1 = self.readFromModbus(client, deviceID, 336, 1)
-                Eco_Mode_Cooling_Y2 = self.readFromModbus(client, deviceID, 288, 1)
-                Eco_Mode_Cooling_Y3 = self.readFromModbus(client, deviceID, 289, 1)
-                Eco_Mode_Cooling_Y4 = self.readFromModbus(client, deviceID, 290, 1)
-                Eco_Mode_Heating_X1 = self.readFromModbus(client, deviceID, 280, 1)
-                Eco_Mode_Heating_X2 = self.readFromModbus(client, deviceID, 281, 1)
-                Eco_Mode_Heating_X3 = self.readFromModbus(client, deviceID, 282, 1)
-                Eco_Mode_Heating_X4 = self.readFromModbus(client, deviceID, 283, 1)
-                Eco_Mode_Heating_Y1 = self.readFromModbus(client, deviceID, 291, 1)
-                Eco_Mode_Heating_Y2 = self.readFromModbus(client, deviceID, 292, 1)
-                Eco_Mode_Heating_Y3 = self.readFromModbus(client, deviceID, 293, 1)
-                Eco_Mode_Heating_Y4 = self.readFromModbus(client, deviceID, 337, 1)
-                Eco_Mode_Hot_Water_X1 = self.readFromModbus(client, deviceID, 284, 1)
-                Eco_Mode_Hot_Water_X2 = self.readFromModbus(client, deviceID, 285, 1)
-                Eco_Mode_Hot_Water_X3 = self.readFromModbus(client, deviceID, 286, 1)
-                Eco_Mode_Hot_Water_X4 = self.readFromModbus(client, deviceID, 287, 1)
-                Eco_Mode_Hot_Water_Y1 = self.readFromModbus(client, deviceID, 294, 1)
-                Eco_Mode_Hot_Water_Y2 = self.readFromModbus(client, deviceID, 295, 1)
-                Eco_Mode_Hot_Water_Y3 = self.readFromModbus(client, deviceID, 296, 1)
-                Eco_Mode_Hot_Water_Y4 = self.readFromModbus(client, deviceID, 338, 1)
-                SP_Cooling = self.readFromModbus(client, deviceID, 2, 1)
-                Pump_Mode = self.readFromModbus(client, deviceID, 11, 0)
+                PV_Return_Water_Temperature = self.readFromModbus(client, deviceID, 3, 188, 1)
+                PV_Outlet_Temperature = self.readFromModbus(client, deviceID, 3, 189, 1)
+                PV_Ambient_Temperature = self.readFromModbus(client, deviceID, 3, 190, 1)
+                PV_Hot_Water_Temperature = self.readFromModbus(client, deviceID, 3, 195, 1)
+                Unit_On = self.readFromModbus(client, deviceID, 1, 40, 0)
+                PV_Fan_Output = self.readFromModbus(client, deviceID, 3, 197, 1)
+                PV_Pump_Output = self.readFromModbus(client, deviceID, 3, 198, 1)
+                PV_Required_Cap = self.readFromModbus(client, deviceID, 3, 203, 1)
+                PV_Actual_Cap = self.readFromModbus(client, deviceID, 3, 204, 1)
+                PV_Power = self.readFromModbus(client, deviceID, 3, 333, 1) * 1000 #kW to W
+                PV_Voltage = self.readFromModbus(client, deviceID, 3, 334, 0)
+                PV_Current = self.readFromModbus(client, deviceID, 3, 335, 1)
+                SP_Hot_Water = self.readFromModbus(client, deviceID, 3, 3, 1)
+                SP_Heating = self.readFromModbus(client, deviceID, 3, 1, 1)
+                Mode = self.readFromModbus(client, deviceID, 3, 0, 0)
+                Status = self.readFromModbus(client, deviceID, 3, 217, 0)
+                ThreeWayValve = self.readFromModbus(client, deviceID, 2, 11, 0)
+                Heater = self.readFromModbus(client, deviceID, 2, 12, 0)
+                AC_Linkage = self.readFromModbus(client, deviceID, 2, 3, 0)
+                Fan_Mode = self.readFromModbus(client, deviceID, 3, 12, 0)
+                SP_TempDiff_Hot_Water = self.readFromModbus(client, deviceID, 3, 4, 1)
+                SP_TempDiff_Cooling_Heating = self.readFromModbus(client, deviceID, 3, 6, 1)
+                Eco_Mode_Cooling_X1 = self.readFromModbus(client, deviceID, 3, 276, 1)
+                Eco_Mode_Cooling_X2 = self.readFromModbus(client, deviceID, 3, 277, 1)
+                Eco_Mode_Cooling_X3 = self.readFromModbus(client, deviceID, 3, 278, 1)
+                Eco_Mode_Cooling_X4 = self.readFromModbus(client, deviceID, 3, 279, 1)
+                Eco_Mode_Cooling_Y1 = self.readFromModbus(client, deviceID, 3, 336, 1)
+                Eco_Mode_Cooling_Y2 = self.readFromModbus(client, deviceID, 3, 288, 1)
+                Eco_Mode_Cooling_Y3 = self.readFromModbus(client, deviceID, 3, 289, 1)
+                Eco_Mode_Cooling_Y4 = self.readFromModbus(client, deviceID, 3, 290, 1)
+                Eco_Mode_Heating_X1 = self.readFromModbus(client, deviceID, 3, 280, 1)
+                Eco_Mode_Heating_X2 = self.readFromModbus(client, deviceID, 3, 281, 1)
+                Eco_Mode_Heating_X3 = self.readFromModbus(client, deviceID, 3, 282, 1)
+                Eco_Mode_Heating_X4 = self.readFromModbus(client, deviceID, 3, 283, 1)
+                Eco_Mode_Heating_Y1 = self.readFromModbus(client, deviceID, 3, 291, 1)
+                Eco_Mode_Heating_Y2 = self.readFromModbus(client, deviceID, 3, 292, 1)
+                Eco_Mode_Heating_Y3 = self.readFromModbus(client, deviceID, 3, 293, 1)
+                Eco_Mode_Heating_Y4 = self.readFromModbus(client, deviceID, 3, 337, 1)
+                Eco_Mode_Hot_Water_X1 = self.readFromModbus(client, deviceID, 3, 284, 1)
+                Eco_Mode_Hot_Water_X2 = self.readFromModbus(client, deviceID, 3, 285, 1)
+                Eco_Mode_Hot_Water_X3 = self.readFromModbus(client, deviceID, 3, 286, 1)
+                Eco_Mode_Hot_Water_X4 = self.readFromModbus(client, deviceID, 3, 287, 1)
+                Eco_Mode_Hot_Water_Y1 = self.readFromModbus(client, deviceID, 3, 294, 1)
+                Eco_Mode_Hot_Water_Y2 = self.readFromModbus(client, deviceID, 3, 295, 1)
+                Eco_Mode_Hot_Water_Y3 = self.readFromModbus(client, deviceID, 3, 296, 1)
+                Eco_Mode_Hot_Water_Y4 = self.readFromModbus(client, deviceID, 3, 338, 1)
+                SP_Cooling = self.readFromModbus(client, deviceID, 3, 2, 1)
+                Pump_Mode = self.readFromModbus(client, deviceID, 3, 11, 0)
 
                 client.close()
 
@@ -607,13 +608,23 @@ class BasePlugin:
         Devices[Unit].Update(nValue=nValue, sValue=sValue)
         Devices[Unit].Refresh()
 
-    def readFromModbus(self, client, deviceID, register, decimalPlaces = 0, isBit = False):
+    def readFromModbus(self, client, deviceID, type, register, decimalPlaces = 0):
+        #Read coils (code 0x01):             read_coils(address: int, count: int = 1, slave: int = 0, **kwargs: Any)
+        #Read discrete inputs (code 0x02):   read_discrete_inputs(address: int, count: int = 1, slave: int = 0, **kwargs: Any)
+        #Read holding registers (code 0x03): read_holding_registers(address: int, count: int = 1, slave: int = 0, **kwargs: Any)
+        #Read input registers (code 0x04):   read_input_registers(address: int, count: int = 1, slave: int = 0, **kwargs: Any)
         try:
-            if isBit:
+            if (type == 1):
                 rr = client.read_coils(register,1,slave=deviceID)
                 return rr.bits[0]
+            elif type == 2:
+                rr = client.read_discrete_inputs(register,1,slave=deviceID)
+                return rr.bits[0]
             else:
-                rr = client.read_holding_registers(register,1,slave=deviceID)
+                if type == 3:
+                    rr = client.read_holding_registers(register,1,slave=deviceID)
+                else:
+                    rr = client.read_input_registers(register,1,slave=deviceID)
                 decoder = BinaryPayloadDecoder.fromRegisters(rr.registers, byteorder=Endian.BIG, wordorder=Endian.BIG)
                 value = decoder.decode_16bit_int()
                 if decimalPlaces == 0:
@@ -634,10 +645,11 @@ class BasePlugin:
             client.close()
         return 0
 
-    def writeToModbus(self, deviceID, register, value, decimalPlaces = 0, isBit = False):
+    def writeToModbus(self, client, deviceID, type, register, value, decimalPlaces = 0, isBit = False):
+        #Write single coil (code 0x05): write_coil(address: int, value: bool, slave: int = 0, **kwargs: Any)
+        #Write register (code 0x06):    write_register(address: int, value: int, slave: int = 0, **kwargs: Any)
         try:
-            if isBit:
-                #write_coil(address: int, value: bool, slave: int = 0, **kwargs: Any)
+            if type == 5:
                 rr = client.write_coil(register, value, slave=deviceID)
             else:
                 builder = BinaryPayloadBuilder(wordorder=Endian.BIG, byteorder=Endian.BIG)
